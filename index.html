@@ -4099,9 +4099,10 @@
       }
     </style>
   <style>
-    .user-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:4px 9px 4px 5px}.user-chip .avatar{background:#e7f2ea;color:var(--green);font-weight:800}.user-chip-copy{display:grid;line-height:1.15}.user-chip-copy b{font-size:10px}.user-chip-copy small{font-size:8px;color:var(--muted)}
+    .user-menu-wrap{position:relative}.user-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:4px 8px 4px 5px;cursor:pointer;font:inherit;transition:.18s ease}.user-chip:hover,.user-chip[aria-expanded="true"]{border-color:#b9d1c0;background:#f7faf7;box-shadow:0 5px 16px #1a392415}.user-chip .avatar{background:#e7f2ea;color:var(--green);font-weight:800}.user-chip-copy{display:grid;line-height:1.15;text-align:left}.user-chip-copy b{font-size:10px}.user-chip-copy small{font-size:8px;color:var(--muted)}.user-menu-caret{font-size:9px;color:var(--muted);transition:transform .18s}.user-chip[aria-expanded="true"] .user-menu-caret{transform:rotate(180deg)}.user-session-menu{position:absolute;right:0;top:calc(100% + 9px);z-index:22;width:230px;padding:7px;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 18px 48px #172a1d24;transform-origin:top right;animation:sessionMenuIn .18s ease-out}.user-session-menu[hidden]{display:none}.session-menu-head{padding:9px 10px 10px;border-bottom:1px solid #edf1ed;margin-bottom:5px}.session-menu-head b,.session-menu-head small{display:block}.session-menu-head b{font-size:11px}.session-menu-head small{font-size:9px;color:var(--muted);margin-top:3px}.session-action{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;border-radius:9px;padding:10px;color:var(--ink);font:700 10px Manrope;text-align:left;cursor:pointer}.session-action:hover{background:#eef6f0;color:var(--green)}.session-action span{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:#edf5ef;color:var(--green);font-size:13px}
     .operators-grid{display:grid;grid-template-columns:minmax(280px,.72fr) minmax(420px,1.28fr);gap:15px}.operator-form{padding:18px}.operator-form-grid{display:grid;gap:11px;margin-top:14px}.operators-list{overflow:hidden}.operator-row{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(120px,.8fr) 90px minmax(160px,.9fr);gap:12px;align-items:center;padding:13px 17px;border-top:1px solid #edf1ed}.operator-row:first-child{border-top:0}.operator-identity{min-width:0}.operator-identity b,.operator-identity small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.operator-identity small{color:var(--muted);margin-top:3px}.operator-metric b,.operator-metric small{display:block}.operator-metric small{color:var(--muted);font-size:9px;margin-top:2px}.operator-actions{display:flex;justify-content:flex-end;gap:5px;flex-wrap:wrap}.operator-empty{padding:34px;text-align:center;color:var(--muted)}.admin-only[hidden]{display:none!important}.sales-operator-filter{min-width:150px}.operator-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:999px;background:#edf5ef;color:#39664b;font-size:9px;font-weight:800}
-    @media(max-width:900px){.operators-grid{grid-template-columns:1fr}.operator-row{grid-template-columns:minmax(130px,1fr) 110px 75px minmax(140px,.8fr)}}@media(max-width:620px){.user-chip-copy{display:none}.operator-row{grid-template-columns:1fr auto}.operator-row .operator-metric{display:none}.sales-operator-filter{width:100%}}
+    .login-gate{isolation:isolate}.login-gate:before,.login-gate:after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(2px);pointer-events:none}.login-gate:before{width:420px;height:420px;left:-170px;bottom:-210px;background:radial-gradient(circle,#b9dec555,transparent 68%);animation:loginFloat 9s ease-in-out infinite}.login-gate:after{width:360px;height:360px;right:-120px;top:-170px;background:radial-gradient(circle,#dceebd66,transparent 68%);animation:loginFloat 11s ease-in-out infinite reverse}.login-panel.login-layout{animation:loginPanelIn .52s cubic-bezier(.2,.8,.2,1)}.login-welcome{position:relative;overflow:hidden}.login-welcome:after{content:"";position:absolute;width:210px;height:210px;right:-90px;bottom:-105px;border:1px solid #a9ceb455;border-radius:50%;box-shadow:0 0 0 34px #e4f0e533,0 0 0 68px #e4f0e526}.login-welcome>*{position:relative;z-index:1}.login-features>div{transition:transform .18s ease,background .18s ease}.login-features>div:hover{transform:translateX(4px)}.login-form-area{position:relative}.login-form-area:before{content:"ACESSO INDIVIDUAL";position:absolute;right:19px;top:18px;padding:5px 8px;border-radius:99px;background:#edf5ef;color:var(--green);font:800 8px Manrope;letter-spacing:.08em}.login-password-wrap{position:relative}.login-password-wrap input{padding-right:45px!important}.password-toggle{position:absolute;right:7px;bottom:7px;width:31px;height:31px;border:0;border-radius:8px;background:#f0f4f0;color:#647269;cursor:pointer}.password-toggle:hover{background:#e3eee6;color:var(--green)}.login-operator-note{display:flex;gap:8px;align-items:flex-start;padding:10px 11px;margin-top:14px;border:1px solid #e5ece6;border-radius:10px;background:#fafcf9;color:#66746b;font-size:9px;line-height:1.45}.login-operator-note span{color:var(--green);font-size:13px}.login-gate.signing-in .login-panel{animation:loginSuccess .38s ease forwards}.shell.session-enter{animation:shellEnter .42s ease-out}.login-submit.loading{pointer-events:none;opacity:.78}.login-submit.loading span{animation:spin .8s linear infinite}@keyframes loginPanelIn{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}@keyframes loginFloat{50%{transform:translate3d(20px,-18px,0) scale(1.05)}}@keyframes sessionMenuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}@keyframes loginSuccess{to{opacity:0;transform:translateY(-10px) scale(.985)}}@keyframes shellEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:900px){.operators-grid{grid-template-columns:1fr}.operator-row{grid-template-columns:minmax(130px,1fr) 110px 75px minmax(140px,.8fr)}}@media(max-width:620px){.user-chip-copy{display:none}.operator-row{grid-template-columns:1fr auto}.operator-row .operator-metric{display:none}.sales-operator-filter{width:100%}.user-session-menu{position:fixed;right:12px;top:61px;width:min(260px,calc(100vw - 24px))}.login-form-area:before{display:none}}@media(prefers-reduced-motion:reduce){.login-gate:before,.login-gate:after,.login-panel.login-layout,.shell.session-enter,.user-session-menu{animation:none!important}.login-features>div{transition:none}}
   </style>
   </head>
   <body>
@@ -4204,9 +4205,12 @@
             >
               ♧
             </button>
-            <div class="user-chip">
-              <div class="avatar" id="current-user-avatar" style="height:30px;width:30px">AD</div>
-              <span class="user-chip-copy"><b id="current-user-name">Administrador</b><small id="current-user-role">Administrador</small></span>
+            <div class="user-menu-wrap">
+              <button class="user-chip" id="user-menu-button" type="button" aria-expanded="false" onclick="toggleUserMenu(event)">
+                <span class="avatar" id="current-user-avatar" style="height:30px;width:30px">AD</span>
+                <span class="user-chip-copy"><b id="current-user-name">Administrador</b><small id="current-user-role">Administrador</small></span><span class="user-menu-caret">⌄</span>
+              </button>
+              <div class="user-session-menu" id="user-session-menu" hidden><div class="session-menu-head"><b id="session-menu-name">Administrador</b><small id="session-menu-username">@admin</small></div><button class="session-action" type="button" onclick="switchOperator()"><span>⇄</span> Trocar operador</button><button class="session-action" type="button" onclick="showView('settings');closeUserMenu()"><span>⚙</span> Minha conta</button></div>
             </div>
           </div>
         </header>
@@ -5378,7 +5382,7 @@
               required
             />
           </div>
-          <div class="field">
+          <div class="field login-password-wrap">
             <label for="login-pass">Senha</label
             ><input
               id="login-pass"
@@ -5388,6 +5392,7 @@
               placeholder="Digite sua senha"
               required
             />
+            <button class="password-toggle" type="button" aria-label="Mostrar senha" onclick="toggleLoginPassword(this)">◉</button>
           </div>
           <label class="remember-login"
             ><input id="remember-login" type="checkbox" checked /> Manter
@@ -5399,9 +5404,10 @@
             role="status"
             aria-live="polite"
           ></div>
-          <button class="btn primary login-submit" type="submit">
+          <button class="btn primary login-submit" id="login-submit" type="submit">
             Entrar no sistema <span>→</span>
           </button>
+          <div class="login-operator-note"><span>♟</span><div><b>Acesso por operador</b><br>Use o usuário individual criado pelo administrador. Produtos, estoque e empresa permanecem compartilhados.</div></div>
           <div class="login-hint">
             <b>Primeiro acesso</b
             ><span
@@ -5572,7 +5578,8 @@
         "business",
       ];
       let syncInProgress = false,
-        syncRequested = false;
+        syncRequested = false,
+        syncMonitorStarted = false;
       function readSyncQueue() {
         try {
           return JSON.parse(localStorage.getItem("mc-sync-queue") || "{}");
@@ -5602,6 +5609,9 @@
         const name = document.querySelector("#current-user-name"), role = document.querySelector("#current-user-role"), avatar = document.querySelector("#current-user-avatar");
         if (name) name.textContent = currentUser.displayName;
         if (role) role.textContent = currentUser.role === "admin" ? "Administrador" : "Operador";
+        const menuName = document.querySelector("#session-menu-name"), menuUsername = document.querySelector("#session-menu-username");
+        if (menuName) menuName.textContent = currentUser.displayName;
+        if (menuUsername) menuUsername.textContent = "@" + currentUser.username;
         if (avatar) avatar.textContent = currentUser.displayName.split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "OP";
         document.querySelectorAll(".admin-only").forEach(element => element.hidden = currentUser.role !== "admin");
         if (currentUser.role !== "admin" && document.querySelector("#view-operators")?.classList.contains("active")) showView("dashboard");
@@ -5616,6 +5626,20 @@
         if (!navigator.onLine || !getAuthToken()) { applyCurrentUser(currentUser); return currentUser; }
         const user = await accountApi("/api/me"); applyCurrentUser(user); return currentUser;
       }
+      function toggleLoginPassword(button) { const input = document.querySelector("#login-pass"); if (!input) return; const visible = input.type === "text"; input.type = visible ? "password" : "text"; button.textContent = visible ? "◉" : "◌"; button.setAttribute("aria-label", visible ? "Mostrar senha" : "Ocultar senha"); }
+      function toggleUserMenu(event) { event?.stopPropagation(); const menu = document.querySelector("#user-session-menu"), button = document.querySelector("#user-menu-button"); if (!menu || !button) return; const opening = menu.hidden; menu.hidden = !opening; button.setAttribute("aria-expanded", String(opening)); }
+      function closeUserMenu() { const menu = document.querySelector("#user-session-menu"), button = document.querySelector("#user-menu-button"); if (menu) menu.hidden = true; if (button) button.setAttribute("aria-expanded", "false"); }
+      document.addEventListener("click", event => { if (!event.target.closest(".user-menu-wrap")) closeUserMenu(); });
+      async function switchOperator() {
+        closeUserMenu();
+        if (cart.length && !confirm("Há uma venda em andamento. Ela será cancelada ao trocar de operador. Continuar?")) return;
+        if (hasPendingSync() && navigator.onLine) await flushSyncQueue().catch(() => {});
+        cart = []; renderCart(); clearAuth();
+        const gate = document.querySelector("#login-gate"), form = gate?.querySelector("form"), user = document.querySelector("#login-user"), password = document.querySelector("#login-pass"), error = document.querySelector("#login-error");
+        form?.reset(); if (document.querySelector("#remember-login")) document.querySelector("#remember-login").checked = true; if (password) password.type = "password"; if (error) error.textContent = "";
+        gate?.classList.remove("signing-in"); if (gate) gate.style.display = "grid"; requestAnimationFrame(() => user?.focus());
+      }
+      async function finishLoginTransition() { const gate = document.querySelector("#login-gate"), shell = document.querySelector(".shell"); gate?.classList.add("signing-in"); await new Promise(resolve => setTimeout(resolve, 260)); if (gate) gate.style.display = "none"; gate?.classList.remove("signing-in"); shell?.classList.remove("session-enter"); requestAnimationFrame(() => shell?.classList.add("session-enter")); }
       function operatorSales(username) { return sales.filter(sale => (sale.operatorUsername || "admin") === username); }
       function populateOperatorFilter() {
         const select = document.querySelector("#sales-operator-filter"); if (!select) return;
@@ -5895,6 +5919,8 @@
         }
       }
       function startSyncMonitor() {
+        if (syncMonitorStarted) return;
+        syncMonitorStarted = true;
         window.addEventListener("offline", () =>
           setSyncState("OFFLINE · PENDENTE"),
         );
@@ -5911,7 +5937,8 @@
       }
       async function signIn(e) {
         e.preventDefault();
-        const err = document.querySelector("#login-error");
+        const err = document.querySelector("#login-error"), submit = document.querySelector("#login-submit");
+        if (submit) { submit.disabled = true; submit.classList.add("loading"); submit.innerHTML = 'Entrando… <span>◌</span>'; }
         err.textContent = "Conectando ao banco online…";
         try {
           const res = await fetch(
@@ -5935,13 +5962,16 @@
           applyCurrentUser(data);
           sessionStorage.setItem("mc-session", "authenticated");
           await hydrateData();
-          document.querySelector("#login-gate").style.display = "none";
+          await finishLoginTransition();
           if (!localStorage.getItem("mc-business"))
             document.querySelector("#setup-gate").style.display = "grid";
           err.textContent = "";
           startSyncMonitor();
         } catch (ex) {
-          err.textContent = ex.message + " Verifique sua conexão.";
+          err.textContent = ex.message || "Não foi possível entrar. Confira os dados e tente novamente.";
+          document.querySelector("#login-pass")?.select();
+        } finally {
+          if (submit) { submit.disabled = false; submit.classList.remove("loading"); submit.innerHTML = 'Entrar no sistema <span>→</span>'; }
         }
         return false;
       }
