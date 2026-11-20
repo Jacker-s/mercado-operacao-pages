@@ -9743,13 +9743,17 @@
           refreshAfter = 30 * 24 * 60 * 60 * 1000,
           candidates = products
             .map((product) => ({ product, code: catalogCodeForProduct(product) }))
-            .filter(({ product, code }) =>
-              code && (manual || (
+            .filter(({ product, code }) => {
+              if (!code) return false;
+              const attemptedLongAgo = Date.now() - Number(attempts[code] || 0) > retryAfter,
+                catalogAge = Date.now() - Date.parse(product.catalog?.updatedAt || 0),
+                needsCoverageUpgrade = Boolean(product.catalog) && Number(product.catalog?.catalogVersion || 0) < 2;
+              return manual || needsCoverageUpgrade || (
                 !product.catalog?.catalogDetailsApplied
-                  ? (Boolean(product.catalog) || Date.now() - Number(attempts[code] || 0) > retryAfter)
-                  : (Date.now() - Number(attempts[code] || 0) > retryAfter && Date.now() - Date.parse(product.catalog?.updatedAt || 0) > refreshAfter)
-              )),
-            );
+                  ? (Boolean(product.catalog) || attemptedLongAgo)
+                  : (attemptedLongAgo && catalogAge > refreshAfter)
+              );
+            });
         if (!candidates.length) {
           if (manual) toast("Todos os produtos com código já estão atualizados");
           return;
