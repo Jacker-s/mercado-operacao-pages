@@ -4569,6 +4569,8 @@
               <div class="head-actions">
                 <button class="btn primary" onclick="openProductAI()">
                   ✦ Assistente IA</button
+                ><button class="btn" id="catalog-refresh-button" onclick="enrichExistingProducts({manual:true})">
+                  ◉ Atualizar imagens</button
                 ><button class="btn" onclick="exportReport('products')">
                   ⇩ Exportar</button
                 ><button class="btn primary" onclick="openModal('product')">
@@ -5876,7 +5878,10 @@
         updateDashboard();
         populateOperatorFilter();
         if (offline) setSyncState("OFFLINE · DADOS LOCAIS");
-        else await flushSyncQueue().catch(() => {});
+        else {
+          await flushSyncQueue().catch(() => {});
+          setTimeout(() => enrichExistingProducts().catch(() => {}), 450);
+        }
       }
       async function synchronizeOnlineData(requestedCategories = null) {
         if (!navigator.onLine || !getAuthToken()) {
@@ -9702,6 +9707,93 @@
           } catch {}
         }
         return null;
+      }
+      function catalogCodeForProduct(product) {
+        if (!product || product.linkedPackSku) return "";
+        return [product.sku, product.unitBarcode, product.packBarcode]
+          .map((value) => String(value || "").replace(/\D/g, ""))
+          .find((value) => value.length >= 8 && value.length <= 14) || "";
+      }
+      function mergeCatalogRecord(current, incoming, code) {
+        const useful = Object.fromEntries(
+          Object.entries(incoming || {}).filter(
+            ([, value]) => value !== "" && value !== null && value !== undefined,
+          ),
+        );
+        return {
+          ...(current || {}),
+          ...useful,
+          code: useful.code || current?.code || code,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+      async function enrichExistingProducts({ manual = false } = {}) {
+        if (!navigator.onLine || !getAuthToken()) {
+          if (manual) toast("Conecte-se à internet para atualizar o catálogo");
+          return;
+        }
+        if (window.__catalogEnrichmentRunning) {
+          if (manual) toast("A atualização do catálogo já está em andamento");
+          return;
+        }
+        const attemptKey = "mc-catalog-attempts",
+          attempts = JSON.parse(localStorage.getItem(attemptKey) || "{}"),
+          retryAfter = 7 * 24 * 60 * 60 * 1000,
+          candidates = products
+            .map((product) => ({ product, code: catalogCodeForProduct(product) }))
+            .filter(({ product, code }) =>
+              code && (manual || (!product.catalog?.image && Date.now() - Number(attempts[code] || 0) > retryAfter)),
+            );
+        if (!candidates.length) {
+          if (manual) toast("Todos os produtos com código já estão atualizados");
+          return;
+        }
+        window.__catalogEnrichmentRunning = true;
+        const button = document.querySelector("#catalog-refresh-button");
+        if (button) { button.disabled = true; button.textContent = "Atualizando 0/" + candidates.length; }
+        let cursor = 0, found = 0, changed = false;
+        const worker = async () => {
+          while (cursor < candidates.length) {
+            const position = cursor++, { product, code } = candidates[position];
+            try {
+              const data = await lookupCatalogGtin(code);
+              attempts[code] = Date.now();
+              if (data) {
+                const before = JSON.stringify(product.catalog || null);
+                product.catalog = mergeCatalogRecord(product.catalog, data, code);
+                if (!product.brand && data.brand) product.brand = data.brand;
+                if ((!product.cat || product.cat === "Outros") && data.category) product.cat = data.category;
+                if (!product.packageDesc && data.quantity) product.packageDesc = data.quantity;
+                if (before !== JSON.stringify(product.catalog)) changed = true;
+                found++;
+              }
+            } catch (error) {
+              console.warn("Não foi possível atualizar o produto " + code, error);
+            }
+            if (button) button.textContent = "Atualizando " + Math.min(cursor, candidates.length) + "/" + candidates.length;
+          }
+        };
+        try {
+          await Promise.all(Array.from({ length: Math.min(3, candidates.length) }, worker));
+          for (const child of products.filter((product) => product.linkedPackSku)) {
+            const parent = products.find((product) => product.sku === child.linkedPackSku);
+            if (parent?.catalog?.image && child.catalog?.image !== parent.catalog.image) {
+              child.catalog = mergeCatalogRecord(child.catalog, parent.catalog, parent.catalog.code || parent.sku);
+              changed = true;
+            }
+          }
+          localStorage.setItem(attemptKey, JSON.stringify(attempts));
+          if (changed) {
+            localStorage.setItem("mc-products", JSON.stringify(products));
+            renderProducts();
+            renderInventory();
+            await persist("products", products);
+          }
+          if (manual) toast(found ? found + " produto(s) atualizado(s) com o catálogo" : "Nenhuma informação nova foi encontrada");
+        } finally {
+          window.__catalogEnrichmentRunning = false;
+          if (button) { button.disabled = false; button.textContent = "◉ Atualizar imagens"; }
+        }
       }
       function renderCatalogResult(data) {
         const host = document.querySelector("#catalog-result-card");
