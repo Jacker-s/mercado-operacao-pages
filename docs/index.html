@@ -9720,7 +9720,12 @@
         set(10, data.brand);
         set(11, data.quantity);
         if (packaging) set(17, code);
-        else set(1, code);
+        else set(1, data.unitBarcode || code);
+        if (Number(data.packQty) > 1) {
+          set(15, data.packName || "Display");
+          set(16, String(Math.floor(Number(data.packQty))));
+          set(17, code);
+        }
         const units = String(data.quantity || "").match(
           /(?:^|\D)(\d{1,3})\s*(?:unidades|unid|unds|units|pcs)\b/i,
         );
@@ -9761,6 +9766,7 @@
         if (label) label.textContent = busy ? "Buscando" : "Buscar";
       }
       async function lookupProductByBarcode(rawCode) {
+        clearTimeout(productLookupTimer);
         const code = String(rawCode || "")
           .trim()
           .replace(/\D/g, "");
@@ -9815,7 +9821,20 @@
         setProductLookupBusy(false);
       }
       let barcodeStream = null,
-        barcodeFrame = 0;
+        barcodeFrame = 0,
+        productLookupTimer = 0,
+        lastAutoLookupCode = "";
+      function scheduleAutomaticProductLookup(value) {
+        clearTimeout(productLookupTimer);
+        const code = String(value || "").replace(/\D/g, "");
+        if (!/^\d{8,14}$/.test(code) || code === lastAutoLookupCode) return;
+        const status = document.querySelector("#barcode-lookup-status");
+        if (status) status.textContent = "Código identificado. A busca começará automaticamente…";
+        productLookupTimer = setTimeout(async () => {
+          lastAutoLookupCode = code;
+          await lookupProductByBarcode(code);
+        }, 450);
+      }
       function stopProductBarcodeScan() {
         if (barcodeFrame) cancelAnimationFrame(barcodeFrame);
         barcodeFrame = 0;
@@ -10025,6 +10044,7 @@
           const sku = document.querySelectorAll("#modal-fields input")[1];
           sku.id = "product-sku";
           sku.autocomplete = "off";
+          lastAutoLookupCode = "";
           const skuField = sku.parentElement,
             skuRow = document.createElement("div");
           skuRow.className = "sku-search-row";
@@ -10055,9 +10075,11 @@
               lookupProductByBarcode(sku.value);
             }
           };
+          sku.addEventListener("input", () => scheduleAutomaticProductLookup(sku.value));
+          sku.addEventListener("paste", () => setTimeout(() => scheduleAutomaticProductLookup(sku.value), 0));
           skuField.insertAdjacentHTML(
             "beforeend",
-            '<button type="button" class="btn small" style="margin-top:7px;margin-right:5px" onclick="focusProductBarcodeReader()">▦ Ler com leitor USB</button><button type="button" class="btn small" style="margin-top:7px" onclick="startProductBarcodeCamera()">Câmera</button><div id="barcode-scan-area"></div><div id="barcode-lookup-status" role="status" style="margin-top:5px;color:var(--muted);font-size:12px">Escaneie com USB ou use a câmera para buscar o produto.</div>',
+            '<button type="button" class="btn small" style="margin-top:7px;margin-right:5px" onclick="focusProductBarcodeReader()">▦ Ler com leitor USB</button><button type="button" class="btn small" style="margin-top:7px" onclick="startProductBarcodeCamera()">Câmera</button><div id="barcode-scan-area"></div><div id="barcode-lookup-status" role="status" style="margin-top:5px;color:var(--muted);font-size:12px">Bipe, cole ou digite um GTIN/EAN para buscar automaticamente.</div>',
           );
           skuField.insertAdjacentHTML("beforeend", '<div id="catalog-result-card" class="catalog-result-card" hidden></div>');
         }
