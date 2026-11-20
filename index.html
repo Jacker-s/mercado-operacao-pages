@@ -4570,7 +4570,7 @@
                 <button class="btn primary" onclick="openProductAI()">
                   ✦ Assistente IA</button
                 ><button class="btn" id="catalog-refresh-button" onclick="enrichExistingProducts({manual:true})">
-                  ◉ Atualizar imagens</button
+                  ◉ Atualizar catálogo</button
                 ><button class="btn" onclick="exportReport('products')">
                   ⇩ Exportar</button
                 ><button class="btn primary" onclick="openModal('product')">
@@ -9724,6 +9724,7 @@
           ...(current || {}),
           ...useful,
           code: useful.code || current?.code || code,
+          catalogDetailsApplied: true,
           updatedAt: new Date().toISOString(),
         };
       }
@@ -9739,10 +9740,15 @@
         const attemptKey = "mc-catalog-attempts",
           attempts = JSON.parse(localStorage.getItem(attemptKey) || "{}"),
           retryAfter = 7 * 24 * 60 * 60 * 1000,
+          refreshAfter = 30 * 24 * 60 * 60 * 1000,
           candidates = products
             .map((product) => ({ product, code: catalogCodeForProduct(product) }))
             .filter(({ product, code }) =>
-              code && (manual || (!product.catalog?.image && Date.now() - Number(attempts[code] || 0) > retryAfter)),
+              code && (manual || (
+                !product.catalog?.catalogDetailsApplied
+                  ? (Boolean(product.catalog) || Date.now() - Number(attempts[code] || 0) > retryAfter)
+                  : (Date.now() - Number(attempts[code] || 0) > retryAfter && Date.now() - Date.parse(product.catalog?.updatedAt || 0) > refreshAfter)
+              )),
             );
         if (!candidates.length) {
           if (manual) toast("Todos os produtos com código já estão atualizados");
@@ -9759,12 +9765,13 @@
               const data = await lookupCatalogGtin(code);
               attempts[code] = Date.now();
               if (data) {
-                const before = JSON.stringify(product.catalog || null);
+                const before = JSON.stringify(product);
                 product.catalog = mergeCatalogRecord(product.catalog, data, code);
-                if (!product.brand && data.brand) product.brand = data.brand;
-                if ((!product.cat || product.cat === "Outros") && data.category) product.cat = data.category;
-                if (!product.packageDesc && data.quantity) product.packageDesc = data.quantity;
-                if (before !== JSON.stringify(product.catalog)) changed = true;
+                if (data.name) product.name = String(data.name).trim();
+                if (data.brand) product.brand = String(data.brand).trim();
+                if (data.category) product.cat = String(data.category).trim();
+                if (data.quantity) product.packageDesc = String(data.quantity).trim();
+                if (before !== JSON.stringify(product)) changed = true;
                 found++;
               }
             } catch (error) {
@@ -9775,6 +9782,8 @@
         };
         try {
           await Promise.all(Array.from({ length: Math.min(3, candidates.length) }, worker));
+          for (const parent of products.filter((product) => !product.linkedPackSku))
+            if (Number(parent.packQty) > 1 && parent.packBarcode) changed = makeUnitVariant(parent) || changed;
           for (const child of products.filter((product) => product.linkedPackSku)) {
             const parent = products.find((product) => product.sku === child.linkedPackSku);
             if (parent?.catalog?.image && child.catalog?.image !== parent.catalog.image) {
@@ -9792,7 +9801,7 @@
           if (manual) toast(found ? found + " produto(s) atualizado(s) com o catálogo" : "Nenhuma informação nova foi encontrada");
         } finally {
           window.__catalogEnrichmentRunning = false;
-          if (button) { button.disabled = false; button.textContent = "◉ Atualizar imagens"; }
+          if (button) { button.disabled = false; button.textContent = "◉ Atualizar catálogo"; }
         }
       }
       function renderCatalogResult(data) {
