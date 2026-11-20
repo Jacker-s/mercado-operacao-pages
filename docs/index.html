@@ -5580,7 +5580,11 @@
       ];
       let syncInProgress = false,
         syncRequested = false,
-        syncMonitorStarted = false;
+        syncMonitorStarted = false,
+        realtimeCursor = 0,
+        realtimePolling = false;
+      const realtimeChannel = "BroadcastChannel" in window ? new BroadcastChannel("erp-one-realtime") : null;
+      realtimeChannel?.addEventListener("message", event => { const category = event.data?.category; if (syncCategories.includes(category) && !hasPendingSync(category)) synchronizeOnlineData([category]); });
       function readSyncQueue() {
         try {
           return JSON.parse(localStorage.getItem("mc-sync-queue") || "{}");
@@ -5750,6 +5754,7 @@
         }
         try {
           await flushSyncQueue();
+          realtimeChannel?.postMessage({ category, at: Date.now() });
         } catch (error) {
           if (error.status === 401) setSyncState("LOGIN NECESSÁRIO");
           else setSyncState("SINCRONIZAÇÃO PENDENTE");
@@ -5858,7 +5863,7 @@
         if (offline) setSyncState("OFFLINE · DADOS LOCAIS");
         else await flushSyncQueue().catch(() => {});
       }
-      async function synchronizeOnlineData() {
+      async function synchronizeOnlineData(requestedCategories = null) {
         if (!navigator.onLine || !getAuthToken()) {
           if (!navigator.onLine) setSyncState("OFFLINE · PENDENTE");
           return;
@@ -5869,7 +5874,8 @@
           const editing =
             document.querySelector("#modal")?.classList.contains("show") ||
             document.querySelector("#setup-gate")?.style.display === "grid";
-          for (const category of syncCategories) {
+          const categoriesToPull = requestedCategories ? syncCategories.filter(category => requestedCategories.includes(category)) : syncCategories;
+          for (const category of categoriesToPull) {
             if (
               queue[category] ||
               editing ||
@@ -5908,7 +5914,7 @@
           renderFinance();
           updateDashboard();
           populateOperatorFilter();
-          setSyncState("ONLINE · SINCRONIZADO");
+          setSyncState("TEMPO REAL · SINCRONIZADO");
         } catch (error) {
           setSyncState(
             error.status === 401
@@ -5918,6 +5924,25 @@
                 : "SINCRONIZAÇÃO PENDENTE",
           );
         }
+      }
+      async function pollRealtimeChanges() {
+        if (realtimePolling || !navigator.onLine || !getAuthToken() || document.visibilityState !== "visible") return;
+        if (document.querySelector("#modal")?.classList.contains("show") || document.querySelector("#setup-gate")?.style.display === "grid") return;
+        realtimePolling = true;
+        try {
+          const response = await fetch("https://mercado-operacao-api.keenloach14.chatgpt.site/api/changes?since=" + realtimeCursor, { headers: { authorization: "Bearer " + getAuthToken() }, cache: "no-store" });
+          const data = await response.json();
+          if (!response.ok) throw Object.assign(new Error(data.error || "Falha na atualização em tempo real"), { status: response.status });
+          const categories = [...new Set((data.changes || []).map(change => change.category).filter(category => syncCategories.includes(category)))];
+          if (categories.length) {
+            setSyncState("ATUALIZANDO EM TEMPO REAL…");
+            await synchronizeOnlineData(categories);
+          } else setSyncState(hasPendingSync() ? "SINCRONIZAÇÃO PENDENTE" : "TEMPO REAL · CONECTADO");
+          realtimeCursor = Number(data.cursor) || Date.now();
+        } catch (error) {
+          if (error.status === 401) setSyncState("LOGIN NECESSÁRIO");
+          else if (!navigator.onLine) setSyncState("OFFLINE · PENDENTE");
+        } finally { realtimePolling = false; }
       }
       function startSyncMonitor() {
         if (syncMonitorStarted) return;
@@ -5930,8 +5955,10 @@
           synchronizeOnlineData();
         });
         document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") synchronizeOnlineData();
+          if (document.visibilityState === "visible") { synchronizeOnlineData(); pollRealtimeChanges(); }
         });
+        pollRealtimeChanges();
+        setInterval(pollRealtimeChanges, 1800);
         setInterval(() => {
           if (document.visibilityState === "visible") synchronizeOnlineData();
         }, 60000);
